@@ -1,0 +1,38 @@
+.admin-card {
+  background: #f9fafb;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.badge-approved {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.badge-blocked {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 13px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  margin-right: 6px;
+}
+
+.btn-edit { background: #3b82f6; color: white; }
+.btn-block { background: #f59e0b; color: white; }
+.btn-remove { background: #ef4444; color: white; }

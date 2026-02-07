@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<h2>Admin Dashboard</h2>
+
+<h3>Pending Requests</h3>
+{% for user in pending %}
+  <form method="POST">
+    <span>{{ user.username }}</span>
+    <input type="hidden" name="username" value="{{ user.username }}">
+    <button name="action" value="approve">Approve</button>
+    <button name="action" value="reject">Reject</button>
+  </form>
+{% else %}
+  <p>No pending requests</p>
+{% endfor %}
+
+<h3>Approved Users</h3>
+<ul>
+  {% for user in approved %}
+    <li>{{ user.username }}</li>
+  {% endfor %}
+</ul>
+
+<a href="/logout">Logout</a>
+
+</body>
+</html>
