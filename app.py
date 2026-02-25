@@ -1,10 +1,11 @@
 from flask import Flask, render_template, request, jsonify
 from datetime import datetime
 from supabase import create_client
+from werkzeug.security import generate_password_hash
 import os
 
 SUPABASE_URL = "https://fxzzdmpusmhroyxjzfwk.supabase.co"
-SUPABASE_KEY = "YeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ4enpkbXB1c21ocm95eGp6ZndrIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjAyOTc3MiwiZXhwIjoyMDg3NjA1NzcyfQ.OPDu7-jmaFc4vD16zDR8BcsoJjYWRiCOfmFdKtP3ZYg"
+SUPABASE_KEY = "sb_secret_D8-XgMPPYA7CQO03jz79zg_gisGKy8h"
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
@@ -16,11 +17,14 @@ ADMIN_CREDENTIALS = [
 
 USER_PORTAL = {"email": "user@company.com", "password": "company123"}
 
+@app.route("/supatest")
+def supatest():
+    data = supabase.table("signup_requests").select("*").limit(1).execute()
+    return {"data": data.data}
 
 @app.route("/")
 def home():
     return render_template("index.html")
-
 
 @app.route("/api/first-login", methods=["POST"])
 def first_login():
@@ -41,25 +45,22 @@ def first_login():
 @app.route("/api/signup", methods=["POST"])
 def signup():
     data = request.json
-    email = data["email"]
     username = data["username"]
     password = data["password"]
 
     # Check if already approved
-    existing = supabase.table("users").select("*").eq("email", email).execute()
+    existing = supabase.table("users").select("*").eq("username", username).execute()
     if existing.data:
         return jsonify({"error": "User already exists"}), 400
 
     # Check pending
-    pending = supabase.table("signup_requests").select("*").eq("email", email).execute()
+    pending = supabase.table("signup_requests").select("*").eq("username", username).execute()
     if pending.data:
-        return jsonify({"error": "Signup already pending"}), 400
+        return jsonify({"error": "Signup request already pending"}), 400
 
     supabase.table("signup_requests").insert({
-        "email": email,
         "username": username,
-        "password_hash": password,  # we will hash later
-        "requested_at": "now()"
+        "password_hash": password
     }).execute()
 
     return jsonify({"success": True})
@@ -67,26 +68,31 @@ def signup():
 @app.route("/api/signin", methods=["POST"])
 def signin():
     data = request.json
-    email = data["email"]
+    username = data["username"]
     password = data["password"]
 
-    user = supabase.table("users").select("*").eq("email", email).execute()
+    # 1️⃣ Check approved users
+    user = supabase.table("users").select("*").eq("username", username).execute()
 
-    if not user.data:
-        return jsonify({"error": "Invalid credentials"}), 401
+    if user.data:
+        user = user.data[0]
 
-    user = user.data[0]
+        if user["blocked"]:
+            return jsonify({"error": "Account blocked"}), 403
 
-    if not user["approved"]:
-        return jsonify({"error": "Pending approval"}), 403
+        if user["password_hash"] != password:
+            return jsonify({"error": "Invalid credentials"}), 401
 
-    if user["blocked"]:
-        return jsonify({"error": "Account blocked"}), 403
+        return jsonify({"success": True})
 
-    if user["password_hash"] != password:
-        return jsonify({"error": "Invalid credentials"}), 401
+    # 2️⃣ If not approved, check pending requests
+    pending = supabase.table("signup_requests").select("*").eq("username", username).execute()
 
-    return jsonify({"success": True})
+    if pending.data:
+        return jsonify({"error": "Account pending approval"}), 403
+
+    # 3️⃣ If not found anywhere
+    return jsonify({"error": "Invalid credentials"}), 401
 
 @app.route("/api/user/update", methods=["POST"])
 def update_profile():
@@ -115,53 +121,109 @@ def update_profile():
 
 
 # ---------- ADMIN ----------
+@app.route("/api/adminpanel", methods=["GET"])
+def adminpanel():
+    try:
+        # Fetch pending signup requests
+        pending_response = supabase.table("signup_requests").select("*").execute()
+        pending_users = pending_response.data or []
+
+        # Fetch approved users
+        approved_response = supabase.table("users").select("*").execute()
+        approved_users = approved_response.data or []
+
+        return jsonify({
+            "pending": pending_users,
+            "approved": approved_users,
+            "pending_count": len(pending_users),
+            "approved_count": len(approved_users)
+        })
+
+    except Exception as e:
+        print("Admin panel error:", e)
+        return jsonify({"error": "Failed to load admin data"}), 500
+
 @app.route("/api/admin/approve", methods=["POST"])
 def approve_user():
-    email = request.json["email"]
+    username = request.json.get("username")
 
-    request_data = supabase.table("signup_requests").select("*").eq("email", email).execute()
+    if not username:
+        return jsonify({"error": "Username missing"}), 400
+
+    request_data = supabase.table("signup_requests") \
+        .select("*") \
+        .eq("username", username) \
+        .execute()
 
     if not request_data.data:
         return jsonify({"error": "Request not found"}), 404
 
     user = request_data.data[0]
 
+    # Insert into users table
     supabase.table("users").insert({
-        "email": user["email"],
         "username": user["username"],
         "password_hash": user["password_hash"],
         "approved": True,
         "blocked": False
     }).execute()
 
-    supabase.table("signup_requests").delete().eq("email", email).execute()
+    # Delete from signup_requests
+    supabase.table("signup_requests") \
+        .delete() \
+        .eq("username", username) \
+        .execute()
 
     return jsonify({"success": True})
 
 @app.route("/api/admin/block", methods=["POST"])
 def block_user():
-    name = request.json["name"]
-    user = next(u for u in approved_users if u["name"] == name)
-    user["blocked"] = not user["blocked"]
-    return jsonify({"success": True})
+    username = request.json["username"]
 
+    user = supabase.table("users") \
+        .select("blocked") \
+        .eq("username", username) \
+        .execute()
+
+    if not user.data:
+        return jsonify({"error": "User not found"}), 404
+
+    current_status = user.data[0]["blocked"]
+
+    supabase.table("users") \
+        .update({"blocked": not current_status}) \
+        .eq("username", username) \
+        .execute()
+
+    return jsonify({"success": True})
 
 @app.route("/api/admin/remove", methods=["POST"])
 def remove_user():
+    username = request.json["username"]
 
-    name = request.json["name"]
-    user = next((u for u in approved_users if u["name"] == name), None)
-    if user:
-        approved_users.remove(user)
+    supabase.table("users") \
+        .delete() \
+        .eq("username", username) \
+        .execute()
+
     return jsonify({"success": True})
-
 
 @app.route("/api/admin/edit", methods=["POST"])
 def edit_user():
-    data = request.json
-    user = next(u for u in approved_users if u["name"] == data["oldName"])
-    user["name"] = data["newName"]
-    user["password"] = data["newPassword"]
+    old_username = request.json["oldUsername"]
+    new_username = request.json["newUsername"]
+    new_password = request.json["newPassword"]
+
+    hashed_password = generate_password_hash(new_password)
+
+    supabase.table("users") \
+        .update({
+            "username": new_username,
+            "password_hash": hashed_password
+        }) \
+        .eq("username", old_username) \
+        .execute()
+
     return jsonify({"success": True})
 
 
