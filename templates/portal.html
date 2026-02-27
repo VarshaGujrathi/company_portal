@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+  <head>
+    <title>User Portal</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+  <body>
+    <h2>User Portal</h2>
+
+    <button onclick="window.location.href = '/signin'">Sign In</button>
+
+    <button onclick="window.location.href = '/signup'">Sign Up</button>
+
+    <br />
+    <a href="/login">Back</a>
+  </body>
+</html>

@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Sign Up</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+  <body>
+    <h2>Sign Up</h2>
+
+    <div id="signUpError" class="error"></div>
+    <div id="signUpSuccess" class="success"></div>
+
+    <form id="signUpForm">
+      <input id="signUpName" placeholder="Username" required />
+
+      <div class="password-wrapper">
+        <input
+          id="signUpPassword"
+          type="password"
+          placeholder="Password"
+          required
+        />
+        <span
+          class="toggle-eye"
+          onclick="togglePassword('signUpPassword', this)"
+          >👁</span
+        >
+      </div>
+
+      <div class="password-wrapper">
+        <input
+          id="signUpConfirmPassword"
+          type="password"
+          placeholder="Confirm Password"
+          required
+        />
+        <span
+          class="toggle-eye"
+          onclick="togglePassword('signUpConfirmPassword', this)"
+          >👁</span
+        >
+      </div>
+
+      <button>Submit for Approval</button>
+    </form>
+
+    <br />
+    <a href="/portal">Back</a>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  </body>
+</html>
