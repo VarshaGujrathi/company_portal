@@ -1,651 +1,509 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Company Portal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<head>
-  <meta charset="UTF-8">
-  <title>Company Portal</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .container {
-      background: white;
-      border-radius: 16px;
-      width: 100%;
-      max-width: 440px;
-      overflow: hidden;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    }
-
-    .header {
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: white;
-      padding: 40px 30px;
-      text-align: center;
-    }
-
-    .content {
-      padding: 40px 30px;
-    }
-
-    .screen {
-      display: none;
-    }
-
-    .screen.active {
-      display: block;
-    }
-
-    .form-group {
-      margin-bottom: 20px;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 14px;
-      font-weight: 500;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px 16px;
-      border: 2px solid #e5e7eb;
-      border-radius: 8px;
-      font-size: 15px;
-    }
-
-    .btn {
-      width: 100%;
-      padding: 14px;
-      border-radius: 8px;
-      border: none;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: white;
-    }
-
-    .btn-secondary {
-      margin-top: 12px;
-      background: white;
-      border: 2px solid #667eea;
-      color: #667eea;
-    }
-
-    .error-message {
-      background: #fee2e2;
-      color: #dc2626;
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 16px;
-      display: none;
-    }
-
-    .success-message {
-      background: #d1fae5;
-      color: #059669;
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 16px;
-      display: none;
-    }
-
-    .error-message.show,
-    .success-message.show {
-      display: block;
-    }
-
-    .link-text {
-      text-align: center;
-      margin-top: 16px;
-    }
-
-    .link-text a {
-      color: #667eea;
-      text-decoration: none;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    /* Password Eye Fix */
-    .password-wrapper {
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-
-    .password-wrapper input {
-      padding-right: 40px;
-      /* Make space for the eye icon */
-    }
-
-    /* TABS */
-    .tabs {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-      padding: 0 30px;
-    }
-
-    .tab-btn {
-      flex: 1;
-      padding: 10px;
-      background: #eee;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      color: #666;
-    }
-
-    .tab-btn.active {
-      background: #667eea;
-      color: white;
-    }
-
-    .tab-content {
-      display: none;
-    }
-
-    .tab-content.active {
-      display: block;
-      animation: fadeIn 0.3s ease;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(5px);
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
       }
 
-      to {
-        opacity: 1;
-        transform: translateY(0);
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
-    }
 
-    .toggle-eye {
-      position: absolute;
-      right: 12px;
-      cursor: pointer;
-      user-select: none;
-      font-size: 1.2rem;
-      color: #666;
-    }
-  </style>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
-</head>
+      .container {
+        background: white;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 440px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      }
 
-<body>
-  <div class="container">
+      .header {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 40px 30px;
+        text-align: center;
+      }
 
-    <!-- FIRST LOGIN -->
-    <div id="firstLogin" class="screen active">
-      <div class="header">
-        <h1>Company Portal</h1>
-        <p>Secure Access Gateway</p>
-      </div>
-      <div class="content">
-        <div id="firstLoginError" class="error-message"></div>
+      .content {
+        padding: 40px 30px;
+      }
 
-        <form id="firstLoginForm">
-          <div class="form-group">
-            <label>Company Email</label>
-            <input id="companyEmail" type="email" required>
-          </div>
-          <div class="form-group">
-            <label>Password</label>
-            <input id="companyPassword" type="password" required>
-          </div>
-          <button class="btn btn-primary">Access Portal</button>
-        </form>
-      </div>
-    </div>
+      .screen {
+        display: none;
+      }
 
-    <!-- USER CHOICE -->
-    <div id="userChoice" class="screen">
-      <div class="header">
-        <h1>Welcome</h1>
-        <p>Employee Portal Access</p>
-      </div>
-      <div class="content">
-        <button class="btn btn-primary" onclick="showScreen('signIn')">Sign In</button>
-        <button class="btn btn-secondary" onclick="showScreen('signUp')">Sign Up</button>
-        <div class="link-text">
-          <a onclick="showScreen('firstLogin')">← Back</a>
+      .screen.active {
+        display: block;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 15px;
+      }
+
+      .btn {
+        width: 100%;
+        padding: 14px;
+        border-radius: 8px;
+        border: none;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .btn-primary {
+        background: #667eea;
+        color: white;
+      }
+
+      .error-message,
+      .success-message {
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        display: none;
+      }
+
+      .error-message {
+        background: #fee2e2;
+        color: #dc2626;
+      }
+
+      .success-message {
+        background: #d1fae5;
+        color: #059669;
+      }
+
+      .show {
+        display: block;
+      }
+
+      .link-text {
+        text-align: center;
+        margin-top: 16px;
+      }
+
+      .link-text a {
+        cursor: pointer;
+        color: #667eea;
+        font-weight: 600;
+      }
+
+      .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      .stat-card {
+        background: #f3f4f6;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+      }
+
+      .admin-section {
+        background: #f9fafb;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+      }
+
+      .admin-card {
+        background: white;
+        padding: 10px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+      }
+
+      .btn-sm {
+        padding: 5px 10px;
+        font-size: 12px;
+        margin-top: 5px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <!-- FIRST LOGIN -->
+      <div id="firstLogin" class="screen active">
+        <div class="header">
+          <h1>Company Portal</h1>
         </div>
-      </div>
-    </div>
+        <div class="content">
+          <div id="firstLoginError" class="error-message"></div>
 
-    <!-- SIGN IN -->
-    <div id="signIn" class="screen">
-      <div class="header">
-        <h1>Sign In</h1>
-      </div>
-      <div class="content">
-        <div id="signInError" class="error-message"></div>
-
-        <form id="signInForm">
-          <div class="form-group">
-            <label>Username</label>
-            <input id="signInName" required>
-          </div>
-          <div class="form-group">
-            <label>Password</label>
-            <div class="password-wrapper">
-              <input id="signInPassword" type="password" required>
-              <span class="toggle-eye" onclick="togglePassword('signInPassword', this)">👁️</span>
-            </div>
-          </div>
-          <button class="btn btn-primary">Sign In</button>
-        </form>
-
-        <div class="link-text">
-          <a onclick="showScreen('userChoice')">← Back</a>
-        </div>
-      </div>
-    </div>
-
-    <!-- SIGN UP -->
-    <div id="signUp" class="screen">
-      <div class="header">
-        <h1>Sign Up</h1>
-      </div>
-      <div class="content">
-        <div id="signUpError" class="error-message"></div>
-        <div id="signUpSuccess" class="success-message"></div>
-
-        <form id="signUpForm">
-          <div class="form-group">
-            <label>Username</label>
-            <input id="signUpName" required>
-          </div>
-          <div class="form-group">
-            <label>Password</label>
-            <div class="password-wrapper">
-              <input id="signUpPassword" type="password" required>
-              <span class="toggle-eye" onclick="togglePassword('signUpPassword', this)">👁️</span>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Confirm Password</label>
-            <div class="password-wrapper">
-              <input id="signUpConfirmPassword" type="password" required>
-              <span class="toggle-eye" onclick="togglePassword('signUpConfirmPassword', this)">👁️</span>
-            </div>
-          </div>
-          <button class="btn btn-primary">Submit for Approval</button>
-        </form>
-
-        <div class="link-text">
-          <a onclick="showScreen('userChoice')">← Back</a>
-        </div>
-      </div>
-    </div>
-
-    <!-- DATA ENTRY & PROFILE -->
-    <div id="dataEntryInterface" class="screen">
-      <div class="header">
-        <h1>User Portal</h1>
-        <p>Welcome, <span id="userNameDisplay"></span></p>
-      </div>
-
-      <!-- TABS -->
-      <div class="tabs">
-        <button class="tab-btn active" onclick="showTab('homeTab')">Home</button>
-        <button class="tab-btn" onclick="showTab('profileTab')">Profile</button>
-      </div>
-
-      <div class="content">
-
-        <!-- HOME TAB -->
-        <div id="homeTab" class="tab-content active">
-          <div class="success-message show" style="text-align:center;">
-            <h3>Ready for Data Entry 📝</h3>
-            <p>Select an option from the menu to begin.</p>
-          </div>
-        </div>
-
-        <!-- PROFILE TAB -->
-        <div id="profileTab" class="tab-content">
-          <h3>Update Profile</h3>
-          <div id="profileError" class="error-message"></div>
-          <div id="profileSuccess" class="success-message"></div>
-
-          <form id="profileForm">
+          <form id="firstLoginForm">
             <div class="form-group">
-              <label>Current Password (Required)</label>
-              <div class="password-wrapper">
-                <input id="currentPassword" type="password" required>
-                <span class="toggle-eye" onclick="togglePassword('currentPassword', this)">👁️</span>
-              </div>
-            </div>
-
-            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-
-            <div class="form-group">
-              <label>New Username</label>
-              <input id="newUsername" placeholder="Leave blank to keep current">
+              <label>Email</label>
+              <input id="companyEmail" type="email" required />
             </div>
 
             <div class="form-group">
-              <label>New Password</label>
-              <div class="password-wrapper">
-                <input id="newPassword" type="password" placeholder="Leave blank to keep current">
-                <span class="toggle-eye" onclick="togglePassword('newPassword', this)">👁️</span>
-              </div>
+              <label>Password</label>
+              <input id="companyPassword" type="password" required />
             </div>
 
-            <button class="btn btn-primary">Update Profile</button>
+            <button class="btn btn-primary">Login</button>
           </form>
         </div>
+      </div>
 
-        <div class="link-text">
-          <a onclick="showScreen('userChoice')">Logout</a>
+      <!-- USER CHOICE -->
+      <div id="userChoice" class="screen">
+        <div class="header">
+          <h1>Welcome</h1>
+        </div>
+        <div class="content">
+          <button class="btn btn-primary" onclick="showScreen('signIn')">
+            Sign In
+          </button>
+          <button class="btn btn-primary" onclick="showScreen('signUp')">
+            Sign Up
+          </button>
+
+          <div class="link-text">
+            <a onclick="showScreen('firstLogin')">← Back</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIGN IN -->
+      <div id="signIn" class="screen">
+        <div class="header">
+          <h1>Sign In</h1>
+        </div>
+        <div class="content">
+          <div id="signInError" class="error-message"></div>
+
+          <form id="signInForm">
+            <div class="form-group">
+              <label>Username</label>
+              <input id="signInName" required />
+            </div>
+
+            <div class="form-group">
+              <label>Password</label>
+              <input id="signInPassword" type="password" required />
+            </div>
+
+            <button class="btn btn-primary">Sign In</button>
+          </form>
+
+          <div class="link-text">
+            <a onclick="showScreen('userChoice')">← Back</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIGN UP -->
+      <div id="signUp" class="screen">
+        <div class="header">
+          <h1>Sign Up</h1>
+        </div>
+        <div class="content">
+          <div id="signUpError" class="error-message"></div>
+          <div id="signUpSuccess" class="success-message"></div>
+
+          <form id="signUpForm">
+            <div class="form-group">
+              <label>Username</label>
+              <input id="signUpName" required />
+            </div>
+
+            <div class="form-group">
+              <label>Password</label>
+              <input id="signUpPassword" type="password" required />
+            </div>
+
+            <div class="form-group">
+              <label>Confirm Password</label>
+              <input id="signUpConfirmPassword" type="password" required />
+            </div>
+
+            <button class="btn btn-primary">Submit for Approval</button>
+          </form>
+
+          <div class="link-text">
+            <a onclick="showScreen('userChoice')">← Back</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADMIN PANEL -->
+      <div id="adminPanel" class="screen">
+        <div class="header">
+          <h1>Admin Dashboard</h1>
+        </div>
+
+        <div class="content">
+          <div class="stat-grid">
+            <div class="stat-card">
+              <h3 id="approvedCount">0</h3>
+              <p>Approved</p>
+            </div>
+
+            <div class="stat-card">
+              <h3 id="pendingCount">0</h3>
+              <p>Pending</p>
+            </div>
+          </div>
+
+          <div class="admin-section">
+            <h3>Pending Requests</h3>
+            <div id="pendingList"></div>
+          </div>
+
+          <div class="admin-section">
+            <h3>Approved Users</h3>
+            <div id="approvedList"></div>
+          </div>
+
+          <div class="link-text">
+            <a onclick="showScreen('firstLogin')">Logout</a>
+          </div>
         </div>
       </div>
     </div>
 
-  </div>
+    <script>
+      let currentUser = null;
 
-  <!-- ADMIN PANEL -->
-  <div id="adminPanel" class="screen">
-    <div class="header">
-      <h1>Admin Dashboard</h1>
-      <p>System Overview & Management</p>
-    </div>
+      /* ================= UI ================= */
 
-    <div class="content">
-
-      <!-- Stats -->
-      <div class="stat-grid">
-        <div class="stat-card">
-          <h3 id="approvedCount">0</h3>
-          <p>APPROVED USERS</p>
-        </div>
-        <div class="stat-card">
-          <h3 id="pendingCount">0</h3>
-          <p>PENDING REQUESTS</p>
-        </div>
-        <div class="stat-card">
-          <h3 id="entryCount">156</h3>
-          <p>DATA ENTRIES</p>
-        </div>
-      </div>
-
-      <!-- Pending Requests -->
-      <div class="admin-section">
-        <h3>Pending Signup Requests</h3>
-        <div id="pendingList"></div>
-      </div>
-
-      <!-- Approved Users -->
-      <div class="admin-section">
-        <h3>Approved Users</h3>
-        <div id="approvedList"></div>
-      </div>
-
-      <div class="link-text">
-        <a onclick="showScreen('firstLogin')">Logout</a>
-      </div>
-
-    </div>
-  </div>
-
-  <script>
-    function showScreen(id) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-      document.querySelectorAll('.error-message, .success-message').forEach(msg => {
-        msg.classList.remove('show');
-        msg.textContent = '';
-      });
-      document.querySelectorAll('form').forEach(form => form.reset());
-
-      // Reset tabs when entering User Portal
-      if (id === 'dataEntryInterface') {
-        showTab('homeTab');
+      function showScreen(id) {
+        document.querySelectorAll(".screen").forEach((screen) => {
+          screen.classList.remove("active");
+        });
+        document.getElementById(id).classList.add("active");
       }
-    }
 
-    function showTab(id) {
-      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      function showError(id, message) {
+        const el = document.getElementById(id);
+        el.textContent = message;
+        el.classList.add("show");
+      }
 
-      document.getElementById(id).classList.add('active');
-      // Find button that calls this tab and make it active
-      const btn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(id));
-      if (btn) btn.classList.add('active');
-    }
+      /* ================= FIRST LOGIN ================= */
 
-    function showError(id, msg) {
-      const el = document.getElementById(id);
-      el.textContent = msg;
-      el.classList.add('show');
-    }
+      document
+        .getElementById("firstLoginForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
 
-    function showSuccess(id, msg) {
-      const el = document.getElementById(id);
-      el.textContent = msg;
-      el.classList.add('show');
-    }
+          const response = await fetch("/api/first-login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: companyEmail.value,
+              password: companyPassword.value,
+            }),
+          });
 
-    // FIRST LOGIN
-    firstLoginForm.addEventListener('submit', async e => {
-      e.preventDefault();
+          const data = await response.json();
 
-      const res = await fetch('/api/first-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: companyEmail.value,
-          password: companyPassword.value
-        })
-      });
+          if (response.ok) {
+            if (data.role === "admin") {
+              showScreen("adminPanel");
+              loadAdminPanel();
+            } else {
+              showScreen("userChoice");
+            }
+          } else {
+            showError("firstLoginError", data.error);
+          }
+        });
 
-      const data = await res.json();
+      /* ================= SIGN UP ================= */
 
-      if (data.role === 'user') showScreen('userChoice');
-      else if (data.role === 'admin') {
-        showScreen('adminPanel');
+      document
+        .getElementById("signUpForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          if (signUpPassword.value !== signUpConfirmPassword.value) {
+            return showError("signUpError", "Passwords do not match");
+          }
+
+          const response = await fetch("/api/signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              username: signUpName.value.trim(),
+              password: signUpPassword.value,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            document.getElementById("signUpSuccess").textContent =
+              "Request submitted!";
+            document.getElementById("signUpSuccess").classList.add("show");
+          } else {
+            showError("signUpError", data.error);
+          }
+        });
+
+      /* ================= SIGN IN ================= */
+
+      document
+        .getElementById("signInForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const response = await fetch("/api/signin", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              username: signInName.value,
+              password: signInPassword.value,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            localStorage.setItem("username", data.username);
+            window.location.href = "/dashboard";
+          } else {
+            showError("signInError", data.error);
+          }
+        });
+
+      /* ================= ADMIN PANEL ================= */
+
+      async function loadAdminPanel() {
+        const response = await fetch("/api/adminpanel");
+        const data = await response.json();
+
+        if (!response.ok) return;
+
+        document.getElementById("approvedCount").textContent =
+          data.approved_count;
+        document.getElementById("pendingCount").textContent =
+          data.pending_count;
+
+        /* -------- Pending Users -------- */
+        const pendingList = document.getElementById("pendingList");
+
+        pendingList.innerHTML = data.pending.length
+          ? data.pending
+              .map(
+                (user) => `
+            <div class="admin-card">
+                <strong>${user.username}</strong><br>
+                <button class="btn-sm" 
+                onclick="approveUser('${user.username}')">
+                Approve</button>
+            </div>
+        `,
+              )
+              .join("")
+          : "No pending users";
+
+        /* -------- Approved Users -------- */
+        const approvedList = document.getElementById("approvedList");
+
+        approvedList.innerHTML = data.approved.length
+          ? data.approved
+              .map(
+                (user) => `
+            <div class="admin-card">
+                <strong>${user.username}</strong>
+                <p>Status: ${user.blocked ? "Blocked" : "Active"}</p>
+
+                <button class="btn-sm" onclick="editUser('${user.username}')">Edit</button>
+                <button class="btn-sm" onclick="toggleBlock('${user.username}')">
+                    ${user.blocked ? "Unblock" : "Block"}
+                </button>
+                <button class="btn-sm" onclick="removeUser('${user.username}')">Remove</button>
+            </div>
+        `,
+              )
+              .join("")
+          : "No approved users";
+      }
+
+      /* ================= ADMIN ACTIONS ================= */
+
+      async function approveUser(username) {
+        console.log("Approving:", username);
+
+        const res = await fetch("/api/admin/approve", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username }),
+        });
+
+        const data = await res.json();
+        console.log("Response:", data);
+
         loadAdminPanel();
       }
-      else showError('firstLoginError', data.error);
-    });
 
-    // SIGN UP
-    signUpForm.addEventListener('submit', async e => {
-      e.preventDefault();
+      async function toggleBlock(username) {
+        await fetch("/api/admin/block", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: username }),
+        });
 
-      if (signUpPassword.value !== signUpConfirmPassword.value) {
-        showError('signUpError', 'Passwords do not match');
-        return;
+        loadAdminPanel();
       }
 
-      const res = await fetch('/api/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: signUpName.value,
-          password: signUpPassword.value
-        })
-      });
+      async function removeUser(username) {
+        if (!confirm("Remove this user permanently?")) return;
 
-      const data = await res.json();
+        await fetch("/api/admin/remove", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: username }),
+        });
 
-      if (res.ok) {
-        showSuccess('signUpSuccess', 'Signup request submitted');
-        setTimeout(() => showScreen('userChoice'), 1500);
-      } else {
-        showError('signUpError', data.error);
+        loadAdminPanel();
       }
-    });
+      async function editUser(oldUsername) {
+        const newUsername = prompt("Enter new username:");
+        const newPassword = prompt("Enter new password:");
 
-    // SIGN IN
-    signInForm.addEventListener('submit', async e => {
-      e.preventDefault();
+        if (!newUsername || !newPassword) return;
 
-      const res = await fetch('/api/signin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: signInName.value,
-          password: signInPassword.value
-        })
-      });
+        await fetch("/api/admin/edit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            oldUsername: oldUsername,
+            newUsername: newUsername,
+            newPassword: newPassword,
+          }),
+        });
 
-      const data = await res.json();
-
-      if (res.ok) {
-        currentUser = data.username;
-        userNameDisplay.textContent = currentUser;
-        showScreen('dataEntryInterface');
-      } else {
-        showError('signInError', data.error);
+        loadAdminPanel();
       }
-    });
-
-    // PROFILE UPDATE
-    profileForm.addEventListener('submit', async e => {
-      e.preventDefault();
-
-      // Clear previous messages
-      profileError.classList.remove('show');
-      profileSuccess.classList.remove('show');
-
-      const res = await fetch('/api/user/update', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: currentUser,
-          currentPassword: currentPassword.value,
-          newUsername: newUsername.value,
-          newPassword: newPassword.value
-        })
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        showSuccess('profileSuccess', 'Profile updated successfully');
-        currentUser = data.username;
-        userNameDisplay.textContent = currentUser;
-        profileForm.reset();
-      } else {
-        showError('profileError', data.error);
-      }
-    });
-
-    async function loadAdminPanel() {
-      const res = await fetch('/api/admin/data');
-      const data = await res.json();
-
-      document.getElementById('approvedCount').textContent = data.approved.length;
-      document.getElementById('pendingCount').textContent = data.pending.length;
-      document.getElementById('entryCount').textContent = data.entries;
-
-      const pendingList = document.getElementById('pendingList');
-      const approvedList = document.getElementById('approvedList');
-
-      pendingList.innerHTML = data.pending.length
-        ? data.pending.map(u => `
-      <div class="admin-card">
-        <strong>${u.name}</strong>
-        <p>Requested: ${u.requested_at}</p>
-        <button class="btn-sm btn-edit" onclick="approveUser('${u.name}')">Approve</button>
-      </div>
-    `).join('')
-        : '<p>No pending requests</p>';
-
-      approvedList.innerHTML = data.approved.map(u => `
-    <div class="admin-card">
-      <span class="badge ${u.blocked ? 'badge-blocked' : 'badge-approved'}">
-        ${u.blocked ? 'Blocked' : 'Approved'}
-      </span>
-      <h4>${u.name}</h4>
-      <p>Approved: ${u.approved_at}</p>
-
-      <button class="btn-sm btn-edit" onclick="editUser('${u.name}')">Edit</button>
-      <button class="btn-sm btn-block" onclick="toggleBlock('${u.name}')">
-        ${u.blocked ? 'Unblock' : 'Block'}
-      </button>
-      <button class="btn-sm btn-remove" onclick="removeUser('${u.name}')">Remove</button>
-    </div>
-  `).join('');
-    }
-
-    async function approveUser(name) {
-      await fetch('/api/admin/approve', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name })
-      });
-      loadAdminPanel();
-    }
-
-    async function toggleBlock(name) {
-      await fetch('/api/admin/block', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name })
-      });
-      loadAdminPanel();
-    }
-
-    async function removeUser(name) {
-      if (!confirm('Remove this user permanently?')) return;
-      await fetch('/api/admin/remove', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name })
-      });
-      loadAdminPanel();
-    }
-
-    async function editUser(oldName) {
-      const newName = prompt('Enter new username');
-      const newPassword = prompt('Enter new password');
-      if (!newName || !newPassword) return;
-
-      await fetch('/api/admin/edit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ oldName, newName, newPassword })
-      });
-      loadAdminPanel();
-    }
-
-    function togglePassword(inputId, icon) {
-      const input = document.getElementById(inputId);
-
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.textContent = '🙈';
-      } else {
-        input.type = 'password';
-        icon.textContent = '👁️';
-      }
-    }
-  </script>
-</body>
-
+    </script>
+  </body>
 </html>

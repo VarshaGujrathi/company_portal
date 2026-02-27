@@ -1,7 +1,7 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify # type: ignore
 from datetime import datetime
-from supabase import create_client
-from werkzeug.security import generate_password_hash
+from supabase import create_client # type: ignore
+from werkzeug.security import generate_password_hash # type: ignore
 import os
 
 SUPABASE_URL = "https://fxzzdmpusmhroyxjzfwk.supabase.co"
@@ -25,6 +25,69 @@ def supatest():
 @app.route("/")
 def home():
     return render_template("index.html")
+
+@app.route("/dashboard")
+def dashboard():
+    return render_template("user_dashboard.html")
+@app.route("/master-file")
+def master_file_page():
+    return render_template("master_file.html")
+
+@app.route("/update-master-file")
+def update_master_file_page():
+    return render_template("update_master_file.html")
+
+
+# ---------- MASTER FILE INSERT ----------
+@app.route("/api/master-file", methods=["POST"])
+def add_master_file():
+    try:
+        data = request.json
+
+        response = supabase.table("master_file").insert({
+            "name": data["name"],
+            "gst_no": data["gst_no"],
+            "password": data["password"],
+            "concern_person": data["concern_person"],
+            "contact_no": data["contact_no"],
+            "email_id": data["email_id"],
+            "periodicity": data["periodicity"],
+            "start_month": data["start_month"],
+            "end_month": data["end_month"]
+        }).execute()
+
+        return jsonify({"success": True})
+
+    except Exception as e:
+        print("Master insert error:", e)
+        return jsonify({"error": "Failed to insert data"}), 500
+
+
+
+# ---------- MASTER FILE UPDATE ----------
+@app.route("/api/update-master-file", methods=["POST"])
+def update_master():
+    try:
+        data = request.json
+
+        response = supabase.table("master_file") \
+            .update({
+                "name": data["name"],
+                "password": data["password"],
+                "concern_person": data["concern_person"],
+                "contact_no": data["contact_no"],
+                "email_id": data["email_id"],
+                "periodicity": data["periodicity"],
+            }) \
+            .eq("gst_no", data["gst_no"]) \
+            .execute()
+
+        return jsonify({"success": True})
+
+    except Exception as e:
+        print("Update error:", e)
+        return jsonify({"error": "Failed to update data"}), 500
+
 
 @app.route("/api/first-login", methods=["POST"])
 def first_login():
@@ -102,7 +165,7 @@ def update_profile():
     new_username = data.get("newUsername")
     new_password = data.get("newPassword")
 
-    user = next((u for u in approved_users 
+    user = next((u for u in approved_users  # type: ignore
                  if u["name"].lower() == current_username.lower() 
                  and u["password"] == current_password), None)
 
@@ -110,7 +173,7 @@ def update_profile():
         return jsonify({"error": "Invalid current password"}), 401
 
     if new_username and new_username.lower() != current_username.lower():
-        if any(u["name"].lower() == new_username.lower() for u in approved_users):
+        if any(u["name"].lower() == new_username.lower() for u in approved_users): # type: ignore
             return jsonify({"error": "Username already taken"}), 400
         user["name"] = new_username
 
@@ -225,7 +288,6 @@ def edit_user():
         .execute()
 
     return jsonify({"success": True})
-
 
 if __name__ == "__main__":
     app.run(debug=True)

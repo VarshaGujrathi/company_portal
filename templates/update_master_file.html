@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Update Master File</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/update_master_file.css') }}"
+    />
+  </head>
+
+  <body>
+    <button class="back-btn" onclick="goBack()">← Back</button>
+
+    <div class="form-container">
+      <div class="header">
+        <h1>Update Master File Sheet</h1>
+        <p>Update client details</p>
+      </div>
+
+      <form id="updateForm">
+        <table>
+          <tr>
+            <td class="label">Name</td>
+            <td><input type="text" required /></td>
+          </tr>
+
+          <tr>
+            <td class="label">GST No</td>
+            <td>
+              <input
+                type="text"
+                pattern="[A-Za-z0-9]{15}"
+                maxlength="15"
+                minlength="15"
+                title="GST must be 15 characters"
+                required
+              />
+            </td>
+          </tr>
+
+          <tr>
+            <td class="label">ID</td>
+            <td>
+              <input type="number" required />
+            </td>
+          </tr>
+
+          <tr>
+            <td class="label">Password</td>
+            <td>
+              <input type="password" required />
+            </td>
+          </tr>
+
+          <tr>
+            <td class="label">Concern Person</td>
+            <td>
+              <input type="text" required />
+            </td>
+          </tr>
+
+          <tr>
+            <td class="label">Contact No.</td>
+            <td>
+              <input
+                type="tel"
+                pattern="[0-9]{10}"
+                maxlength="10"
+                minlength="10"
+                inputmode="numeric"
+                title="Contact number must be exactly 10 digits"
+                required
+              />
+            </td>
+          </tr>
+
+          <tr>
+            <td class="label">Email ID</td>
+            <td>
+              <input
+                type="email"
+                pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                title="Enter valid lowercase email"
+                required
+              />
+            </td>
+          </tr>
+
+          <tr>
+            <td class="label">Periodicity</td>
+            <td>
+              <select required>
+                <option value="">Select</option>
+                <option>Monthly</option>
+                <option>Quarterly</option>
+              </select>
+            </td>
+          </tr>
+        </table>
+
+        <button type="submit" class="submit-btn">Update Master File</button>
+      </form>
+    </div>
+
+    <script>
+      document
+        .getElementById("updateForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const inputs = this.querySelectorAll("input, select");
+
+          const formData = {
+            name: inputs[0].value,
+            gst_no: inputs[1].value,
+            password: inputs[3].value,
+            concern_person: inputs[4].value,
+            contact_no: inputs[5].value,
+            email_id: inputs[6].value,
+            periodicity: inputs[7].value,
+            start_month: "", // if not in form, remove from backend too
+            end_month: "",
+          };
+
+          const response = await fetch("/api/update-master-file", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formData),
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            alert("Updated successfully!");
+            this.reset();
+          } else {
+            alert(result.error || "Error occurred");
+          }
+        });
+    </script>
+  </body>
+</html>

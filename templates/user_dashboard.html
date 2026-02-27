@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>User Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Flask Static CSS -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/user_dashboard.css') }}"
+    />
+  </head>
+
+  <body>
+    <!-- Logout Button OUTSIDE container -->
+    <button class="logout-btn" onclick="logout()">Logout</button>
+
+    <div class="dashboard-container">
+      <!-- Header -->
+      <div class="header">
+        <h1>User Dashboard</h1>
+      </div>
+
+      <!-- Dashboard Cards -->
+      <div class="dashboard-cards">
+        <!-- Master File -->
+        <div class="card" onclick="goToMasterFile()">
+          <h3>Master File Sheet</h3>
+          <p>Add clients details to master file</p>
+        </div>
+
+        <!-- Update Master File -->
+        <div class="card" onclick="goToUpdateMasterFile()">
+          <h3>Update Master File Sheet</h3>
+          <p>Update clients details</p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Check login
+      const username = localStorage.getItem("username");
+      if (!username) {
+        window.location.href = "/";
+      }
+
+      function logout() {
+        localStorage.removeItem("username");
+        window.location.href = "/";
+      }
+
+      function goToMasterFile() {
+        window.location.href = "/master-file";
+      }
+
+      function goToUpdateMasterFile() {
+        window.location.href = "/update-master-file";
+      }
+    </script>
+  </body>
+</html>

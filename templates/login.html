@@ -1,20 +1,23 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <title>Company Portal</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
-  <h2>Company Portal Login</h2>
+  <head>
+    <title>Company Portal</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+  <body>
+    <h2>Company Portal Login</h2>
 
-  {% if error %}
+    {% if error %}
     <p class="error">{{ error }}</p>
-  {% endif %}
+    {% endif %}
 
-  <form method="POST">
-    <input type="email" name="email" placeholder="Email" required />
-    <input type="password" name="password" placeholder="Password" required />
-    <button type="submit">Login</button>
-  </form>
-</body>
+    <form method="POST">
+      <input type="email" name="email" placeholder="Email" required />
+      <input type="password" name="password" placeholder="Password" required />
+      <button type="submit">Login</button>
+    </form>
+  </body>
 </html>

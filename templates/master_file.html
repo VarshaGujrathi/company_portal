@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Master File Sheet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/master_file.css') }}"
+    />
+  </head>
+
+  <body>
+    <button class="back-btn" onclick="goBack()">← Back</button>
+
+    <div class="form-container">
+      <div class="header">
+        <h1>Master File Sheet</h1>
+        <p>Add new data to Master File</p>
+      </div>
+
+      <form id="masterForm">
+        <table>
+          <tr>
+            <td class="label">Name</td>
+            <td><input type="text" required /></td>
+          </tr>
+
+          <tr>
+            <td class="label">GST No</td>
+            <td>
+              <input
+                type="text"
+                pattern="[A-Za-z0-9]{15}"
+                maxlength="15"
+                title="GST must be 15 characters"
+                required
+              />
+            </td>
+          </tr>
+
+          <tr>
+            <td class="label">ID</td>
+            <td><input type="number" required /></td>
+          </tr>
+
+          <tr>
+            <td class="label">Password</td>
+            <td><input type="password" required /></td>
+          </tr>
+
+          <tr>
+            <td class="label">Concern Person</td>
+            <td><input type="text" required /></td>
+          </tr>
+
+          <tr>
+            <td class="label">Contact No.</td>
+            <td>
+              <input
+                type="tel"
+                name="contact"
+                pattern="[0-9]{10}"
+                maxlength="10"
+                minlength="10"
+                inputmode="numeric"
+                required
+              />
+            </td>
+          </tr>
+
+          <tr>
+            <td class="label">Email ID</td>
+            <td>
+              <input
+                type="email"
+                pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                title="Enter valid lowercase email"
+                required
+              />
+            </td>
+          </tr>
+
+          <tr>
+            <td class="label">Periodicity</td>
+            <td>
+              <select required>
+                <option value="">Select</option>
+                <option>Monthly</option>
+                <option>Quarterly</option>
+              </select>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="label">Start Month</td>
+            <td>
+              <select required>
+                <option value="">Select Month</option>
+                <option>April 2026</option>
+                <option>May 2026</option>
+                <option>June 2026</option>
+                <option>July 2026</option>
+                <option>August 2026</option>
+                <option>September 2026</option>
+                <option>October 2026</option>
+                <option>November 2026</option>
+                <option>December 2026</option>
+                <option>January 2027</option>
+                <option>February 2027</option>
+                <option>March 2027</option>
+              </select>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="label">End Month</td>
+            <td>
+              <select required>
+                <option value="">Select Month</option>
+                <option>April 2026</option>
+                <option>May 2026</option>
+                <option>June 2026</option>
+                <option>July 2026</option>
+                <option>August 2026</option>
+                <option>September 2026</option>
+                <option>October 2026</option>
+                <option>November 2026</option>
+                <option>December 2026</option>
+                <option>January 2027</option>
+                <option>February 2027</option>
+                <option>March 2027</option>
+              </select>
+            </td>
+          </tr>
+        </table>
+
+        <button type="submit" class="submit-btn">Add to Master File</button>
+      </form>
+    </div>
+
+    <script>
+      document
+        .getElementById("masterForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const inputs = this.querySelectorAll("input, select");
+
+          const formData = {
+            name: inputs[0].value,
+            gst_no: inputs[1].value,
+            password: inputs[3].value,
+            concern_person: inputs[4].value,
+            contact_no: inputs[5].value,
+            email_id: inputs[6].value,
+            periodicity: inputs[7].value,
+            start_month: inputs[8].value,
+            end_month: inputs[9].value,
+          };
+
+          const response = await fetch("/api/master-file", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formData),
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            alert("Data added successfully!");
+            this.reset();
+          } else {
+            alert(result.error || "Error occurred");
+          }
+        });
+    </script>
+  </body>
+</html>
